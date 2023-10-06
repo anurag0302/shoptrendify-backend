@@ -4,19 +4,29 @@ const app = express();
 app.use(express.json());
 require('dotenv').config();
 
-// require('./config/db');
-// const authRoutes=require("./routes/authRoute");
+require('./config/db');
+const productsRoute=require("./routes/productsRoute");
+
+const allowedOrigins = [
+  process.env.URL // Add other origins as needed
+];
 
 app.use(cors({
-    credentials: true,
-    origin: process.env.URL,
-  }));
+  credentials: true,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+}));
 
 
 app.get("/", (req, res) => {
   res.send("API Working on port 5000 ");
 });
-// app.use("/", authRoutes);
+app.use("/", productsRoute);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
