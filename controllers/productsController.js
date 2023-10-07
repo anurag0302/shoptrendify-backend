@@ -10,7 +10,7 @@ const fetchData = (offset, limit) => {
 
 const getAll = async (req, res) => {
   try {
-    const { offset = 0, limit = 2 } = req.query;
+    const { offset = 0, limit = 20 } = req.query;
     const products = fetchData(offset, limit);
     res.status(200).json(products);
   } catch (error) {
