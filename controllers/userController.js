@@ -5,7 +5,7 @@ const signup = async (req, res) => {
   try {
     const isUserExists = await userService.isUserExists(phone_number);
     if (isUserExists) {
-      res.status(400).json({ error: "User already exists" });
+      res.status(409).json({ error: "User already exists" });
     } else {
       const newUser = await userService.registerUser(
         name,
@@ -13,9 +13,9 @@ const signup = async (req, res) => {
         password,
         phone_number
       );
-      res
-        .status(201)
-        .json({ message: "User registered successfully", user: newUser });
+      const userWithoutPassword = { ...newUser.user._doc };
+      delete userWithoutPassword.password;
+      res.status(201).json({ user: userWithoutPassword, token: newUser.token });
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -28,7 +28,18 @@ const login = async (req, res) => {
     const { user, token } = await userService.loginUser(email, password);
     const userWithoutPassword = { ...user._doc };
     delete userWithoutPassword.password;
-    res.status(200).json({ message: 'Login successful', user: userWithoutPassword , token });
+    res.status(200).json({ user: userWithoutPassword, token });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
+
+const verifyTokenLogin = async (req, res) => {
+  try {
+    const user = await userService.verifyUser(req.params.id);
+    const userWithoutPassword = { ...user._doc };
+    delete userWithoutPassword.password;
+    res.status(200).json({ user: userWithoutPassword, token:req.params.id });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
@@ -37,4 +48,5 @@ const login = async (req, res) => {
 module.exports = {
   login,
   signup,
+  verifyTokenLogin,
 };
